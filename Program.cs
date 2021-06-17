@@ -91,7 +91,13 @@ namespace TiffTheSeason
                 }
             }
 
-            return colors.GroupBy(c => c)
+            return colors.Where(c =>
+                         {
+                             // this is probably "white"-like, and not part of the real color
+                             const int brightestColor = 0xFD;
+                             return c.R < brightestColor || c.G < brightestColor || c.B < brightestColor;
+                         })
+                         .GroupBy(c => c)
                          .OrderByDescending(g => g.Count())
                          .First().Key;
         }
