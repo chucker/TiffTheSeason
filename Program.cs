@@ -11,6 +11,8 @@ namespace TiffTheSeason
 {
     class Program
     {
+        private const int ImageSize = 64;
+
         static void Main(string[] args)
         {
             var inputDir = new DirectoryInfo("../../../input");
@@ -40,7 +42,7 @@ namespace TiffTheSeason
                             color = inBitmap.GetMostFrequentColor();
                         }
 
-                        using (var outBitmap = new Bitmap(16, 16))
+                        using (var outBitmap = new Bitmap(ImageSize, ImageSize))
                         using (var g = Graphics.FromImage(outBitmap))
                         {
                             g.Clear(color);
