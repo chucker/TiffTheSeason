@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 #nullable enable
 
@@ -13,7 +15,9 @@ namespace TiffTheSeason
     {
         private const int ImageSize = 64;
 
-        static void Main(string[] args)
+            const float threshold = 0.5529412f;
+
+        static async Task Main(string[] args)
         {
             var inputDir = new DirectoryInfo("../../../input");
             var outputDir = new DirectoryInfo("../../../output");
@@ -22,11 +26,12 @@ namespace TiffTheSeason
 
             // replicate input dir hierarchy into output dir
 
+
             foreach (var inputFSItem in inputDir.EnumerateFileSystemInfos("*", new EnumerationOptions
             {
                 RecurseSubdirectories = true
             }))
-            {
+            {                
                 var relativePath = inputFSItem.GetPathRelativeTo(inputDir);
                 string equivalentOutputPath = Path.Combine(outputDir.FullName, relativePath);
 
@@ -42,18 +47,58 @@ namespace TiffTheSeason
                             color = inBitmap.GetMostFrequentColor();
                         }
 
-                        using (var outBitmap = new Bitmap(ImageSize, ImageSize))
-                        using (var g = Graphics.FromImage(outBitmap))
+                        //string jsonOutputPath = equivalentOutputPath.Replace(inputFSItem.Extension, ".json");
+                        //await File.WriteAllTextAsync(jsonOutputPath, JsonSerializer.Serialize(color.GetBrightness(), new JsonSerializerOptions
+                        //{
+                        //    WriteIndented = true
+                        //}));
+
+                        switch (color.GetBrightness())
                         {
-                            g.Clear(color);
+                            case >= threshold:
+                                var darkerColor = color.AdjustLightness(threshold);
 
-                            g.Save();
+                                WriteImageWithColor(equivalentOutputPath.Replace(inputFSItem.Extension, "-dark.tiff"), darkerColor);
 
-                            outBitmap.Save(equivalentOutputPath, ImageFormat.Tiff);
+                                break;
+                            case < threshold:
+                                var lighterColor = color.AdjustLightness(threshold);
+
+                                WriteImageWithColor(equivalentOutputPath.Replace(inputFSItem.Extension, "-light.tiff"), lighterColor);
+
+                                break;
                         }
+
+                        WriteImageWithColor(equivalentOutputPath, color);
+
                         break;
                 }
             }
+        }
+
+        private static void WriteImageWithColor(string outputPath, Color color)
+        {
+            using (var outBitmap = new Bitmap(ImageSize, ImageSize))
+            using (var g = Graphics.FromImage(outBitmap))
+            {
+                g.Clear(color);
+
+                g.Save();
+
+                outBitmap.Save(outputPath, ImageFormat.Tiff);
+            }
+        }
+    }
+
+    public static class ColorExtensions
+    {
+        public static Color AdjustLightness(this Color color, double newLightness)
+        {
+            var beautifulColor = BeautifulColors.Color.FromHSL(color.GetHue(),
+                                                               color.GetSaturation(),
+                                                               newLightness);
+
+            return Color.FromArgb(beautifulColor.R, beautifulColor.G, beautifulColor.B);
         }
     }
 
