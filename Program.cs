@@ -13,9 +13,13 @@ namespace TiffTheSeason
 {
     class Program
     {
+        record FilenameWithContrast(string Filename, bool IsProbablyDark, double ContrastRatioToBlack, double ContrastRatioToWhite);
+
         private const int ImageSize = 64;
 
-            const float threshold = 0.5529412f;
+        const float ContrastToBlackThreshold = 13.8f;
+        const float ContrastToWhiteThreshold = 1.7f;
+        //const float threshold = 0.5529412f;
 
         static async Task Main(string[] args)
         {
@@ -26,12 +30,13 @@ namespace TiffTheSeason
 
             // replicate input dir hierarchy into output dir
 
+            var filesnamesWithContrasts = new List<FilenameWithContrast>();
 
             foreach (var inputFSItem in inputDir.EnumerateFileSystemInfos("*", new EnumerationOptions
             {
                 RecurseSubdirectories = true
             }))
-            {                
+            {
                 var relativePath = inputFSItem.GetPathRelativeTo(inputDir);
                 string equivalentOutputPath = Path.Combine(outputDir.FullName, relativePath);
 
@@ -47,32 +52,53 @@ namespace TiffTheSeason
                             color = inBitmap.GetMostFrequentColor();
                         }
 
-                        //string jsonOutputPath = equivalentOutputPath.Replace(inputFSItem.Extension, ".json");
-                        //await File.WriteAllTextAsync(jsonOutputPath, JsonSerializer.Serialize(color.GetBrightness(), new JsonSerializerOptions
+                        string jsonOutputPath = equivalentOutputPath.Replace(inputFSItem.Extension, ".json");
+
+                        var metadata = new
+                        {
+                            ContrastRatioToWhite = color.GetContrastRatio(Color.White),
+                            ContrastRatioToBlack = color.GetContrastRatio(Color.Black)
+                        };
+
+                        //await File.WriteAllTextAsync(jsonOutputPath, JsonSerializer.Serialize(metadata, new JsonSerializerOptions
                         //{
                         //    WriteIndented = true
                         //}));
 
-                        switch (color.GetBrightness())
-                        {
-                            case >= threshold:
-                                var darkerColor = color.AdjustLightness(threshold);
+                        var isLight = metadata.ContrastRatioToBlack >= ContrastToBlackThreshold ||
+                                      (
+                                          metadata.ContrastRatioToWhite >= ContrastToWhiteThreshold &&
+                                          metadata.ContrastRatioToBlack >= 12
+                                      );
+                        //var isDark = metadata.ContrastRatioToBlack < metadata.ContrastRatioToWhite;
 
-                                WriteImageWithColor(equivalentOutputPath.Replace(inputFSItem.Extension, "-dark.tiff"), darkerColor);
+                        filesnamesWithContrasts.Add(new FilenameWithContrast(inputFSItem.Name, !isLight, metadata.ContrastRatioToBlack, metadata.ContrastRatioToWhite));
 
-                                break;
-                            case < threshold:
-                                var lighterColor = color.AdjustLightness(threshold);
+                        //switch (isDark)
+                        //{
+                        //    case false:
+                        //        var darkerColor = color.AdjustLightness(0.3);
 
-                                WriteImageWithColor(equivalentOutputPath.Replace(inputFSItem.Extension, "-light.tiff"), lighterColor);
+                        //        WriteImageWithColor(equivalentOutputPath.Replace(inputFSItem.Extension, "-dark.tiff"), darkerColor);
 
-                                break;
-                        }
+                        //        break;
+                        //    case true:
+                        //        var lighterColor = color.AdjustLightness(0.7);
 
-                        WriteImageWithColor(equivalentOutputPath, color);
+                        //        WriteImageWithColor(equivalentOutputPath.Replace(inputFSItem.Extension, "-light.tiff"), lighterColor);
+
+                        //        break;
+                        //}
+
+                        //WriteImageWithColor(equivalentOutputPath, color);
 
                         break;
                 }
+            }
+
+            foreach (var item in filesnamesWithContrasts.OrderBy(f => f.IsProbablyDark).ThenBy(f => f.Filename))
+            {
+                Console.WriteLine($"{item.Filename}: {item.IsProbablyDark} black: {item.ContrastRatioToBlack} white: {item.ContrastRatioToWhite}");
             }
         }
 
@@ -92,6 +118,14 @@ namespace TiffTheSeason
 
     public static class ColorExtensions
     {
+        public static double GetContrastRatio(this Color color, Color otherColor)
+        {
+            var l1 = color.GetBrightness();
+            var l2 = otherColor.GetBrightness();
+
+            return (Math.Max(l1, l2) + 0.05) / (Math.Min(l1, l2) + 0.05);
+        }
+
         public static Color AdjustLightness(this Color color, double newLightness)
         {
             var beautifulColor = BeautifulColors.Color.FromHSL(color.GetHue(),
