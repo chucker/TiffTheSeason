@@ -5,13 +5,13 @@ Do you wish your Mac's desktop picture popped like an Apple Watch Solo Loop? Or 
 
 What if it looked more like these?
 
-![A Mac with a Kumquat background](screenshots/screenshot-kumquat.jpg)
+<img src="screenshots/screenshot-kumquat.jpg" alt="A Mac with a Kumquat background" height="240" />
 
-![A Mac with a Pistachio background](screenshots/screenshot-pistachio.jpg)
+<img src="screenshots/screenshot-pistachio.jpg" alt="A Mac with a Pistachio background" height="240" />
 
-![A Mac with a Capri Blue background](screenshots/screenshot-capri-blue.jpg)
+<img src="screenshots/screenshot-capri-blue.jpg" alt="A Mac with a Capri Blue background" height="240" />
 
-![A Mac with a Baltic Blue background](screenshots/screenshot-baltic-blue.jpg)
+<img src="screenshots/screenshot-baltic-blue.jpg" alt="A Mac with a Baltic Blue background" height="240" />
 
 Apple has been releasing accessories (bands for the Apple Watch, cases for iPhones and iPads, etc.) on a semiannual schedule; spring and fall fashion collections, if you will. Many of those are great colors — why not have them on your Mac?
 
@@ -25,13 +25,24 @@ The zip file contains folders of single-color images, organized by releases of A
 
 3. Drag one or more folders from the zip archive in the left panel, or add by clicking the **+** button:
 
-![The Desktop & Screensaver System Preferences pane, with a folder being dragged inside](screenshots/sysprefs.png)
+<img src="screenshots/sysprefs.png" alt="The Desktop & Screensaver System Preferences pane, with a folder being dragged inside" width="240" />
 
 This will add those folders to, well, the **Folders** section. And then you can simply pick one:
 
-![Various colors to choose from, in System Preferences](screenshots/sysprefs-2.png)
+<img src="screenshots/sysprefs-2.png" alt="Various colors to choose from, in System Preferences" height="240" />
 
 That's it! You pick a lovely color there. 🙂
+
+# FAQ
+
+<dl>
+<dt>Can't I put them in subfolders?</dt>
+<dd>It seems Apple dosn't support that, alas.
+<dt>Does it work on iOS?</dt>
+<dd>I haven't tried, but I believe you can't add entire collections of images to iOS. You can always, of course, add single images.</dd>
+<dt>Does it work on Windows, Linux with GNOME, my pet platform?</dt>
+<dd>Probably. If there's some special image collection format for those or some other requirements, please do let me know by writing an issue.</dd>
+</dl>
 
 # Credits
 
