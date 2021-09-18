@@ -31,7 +31,7 @@ This will add those folders to, well, the **Folders** section. And then you can 
 
 <img src="screenshots/sysprefs-2.png" alt="Various colors to choose from, in System Preferences" height="240" />
 
-That's it! You pick a lovely color there. 🙂
+That's it! You've picked a lovely color there. 🙂
 
 # FAQ
 
